@@ -1,4 +1,5 @@
 const express = require('express');
+const cluster = require('cluster');
 
 const PORT = 3000;
 
@@ -38,6 +39,7 @@ app.get('/', (req, res) => {
     <div class="wrapper">
       <main>
         <h1 class="main">Performance Example</h1>
+        <h2 class="main">Process ID: ${process.pid}</h2>
       </main>
     </div>
   </body>
@@ -78,6 +80,7 @@ app.get('/timer', (req, res) => {
       <main>
         <h1 class="main">Wow, that was a long delay!</h1>
         <h1 class="main">This was a good example of server blocking.</h1>
+        <h2 class="main">Process ID: ${process.pid}</h2>
       </main>
     </div>
   </body>
@@ -85,6 +88,13 @@ app.get('/timer', (req, res) => {
   `);
 });
 
-app.listen(PORT, () => {
-  console.log(`🦄 Flying high on port ${PORT}`);
-});
+if (cluster.isMaster) {
+  console.log('Master has been started...');
+  cluster.fork();
+  cluster.fork();
+} else {
+  console.log('Worker process started.');
+  app.listen(PORT, () => {
+    console.log(`🦄 Flying high on port ${PORT}`);
+  });
+}
